@@ -36,6 +36,7 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] private BackupEntry? _selectedBackup;
     [ObservableProperty] private LanguageOption _selectedLanguage;
     [ObservableProperty] private bool _isPathsExpanded = true;
+    [ObservableProperty] private bool _capStrikesToOne = true;
     [ObservableProperty] private bool _speedEnabled;
     [ObservableProperty] private double _speedMultiplier = 1.0;
 
@@ -64,6 +65,7 @@ public partial class MainViewModel : ObservableObject
         MaxBackups = settings.MaxBackups;
         AutoRelaunchGame = settings.AutoRelaunchGame;
         GameExePath = settings.GameExePath;
+        CapStrikesToOne = settings.CapStrikesToOne;
         SpeedEnabled = settings.SpeedEnabled;
         SpeedMultiplier = settings.SpeedMultiplier > 0 ? settings.SpeedMultiplier : 1.0;
 
@@ -110,6 +112,7 @@ public partial class MainViewModel : ObservableObject
     partial void OnMaxBackupsChanged(int value) => SaveSettings();
     partial void OnAutoRelaunchGameChanged(bool value) => SaveSettings();
     partial void OnGameExePathChanged(string value) => SaveSettings();
+    partial void OnCapStrikesToOneChanged(bool value) => SaveSettings();
 
     partial void OnSpeedEnabledChanged(bool value)
     {
@@ -219,7 +222,7 @@ public partial class MainViewModel : ObservableObject
             StatusMessage = Loc.Instance["StatusRemovingPenalty"];
             await Task.Run(() =>
             {
-                _saveFileService.ResetPenalty(SaveFilePath, false);
+                _saveFileService.ResetPenalty(SaveFilePath, false, CapStrikesToOne);
 
                 if (!_saveFileService.VerifyIntegrity(SaveFilePath))
                     throw new InvalidOperationException("Database integrity check failed after modification.");
@@ -274,7 +277,7 @@ public partial class MainViewModel : ObservableObject
             StatusMessage = Loc.Instance["StatusRemovingPenalty"];
             await Task.Run(() =>
             {
-                _saveFileService.ResetPenalty(SaveFilePath, false);
+                _saveFileService.ResetPenalty(SaveFilePath, false, CapStrikesToOne);
 
                 if (!_saveFileService.VerifyIntegrity(SaveFilePath))
                     throw new InvalidOperationException("Database integrity check failed after modification.");
@@ -463,6 +466,7 @@ public partial class MainViewModel : ObservableObject
             AutoRelaunchGame = AutoRelaunchGame,
             GameExePath = GameExePath,
             Language = SelectedLanguage.Code,
+            CapStrikesToOne = CapStrikesToOne,
             SpeedEnabled = SpeedEnabled,
             SpeedMultiplier = SpeedMultiplier,
         });

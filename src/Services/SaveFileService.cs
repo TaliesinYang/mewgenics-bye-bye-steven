@@ -35,7 +35,7 @@ public class SaveFileService
         return result;
     }
 
-    public void ResetPenalty(string savePath, bool clearHistory)
+    public void ResetPenalty(string savePath, bool clearHistory, bool capStrikes = true)
     {
         if (!File.Exists(savePath))
             throw new FileNotFoundException("Save file not found.", savePath);
@@ -57,7 +57,7 @@ public class SaveFileService
                     deleteCmd.CommandText = "DELETE FROM properties WHERE key LIKE 'NPCRSTRACKER_steven_savescum_%'";
                     deleteCmd.ExecuteNonQuery();
                 }
-                else
+                else if (capStrikes)
                 {
                     // Cap steven strikes to 1 (keep only the first record)
                     using var capCmd = conn.CreateCommand();

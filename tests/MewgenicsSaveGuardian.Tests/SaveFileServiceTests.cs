@@ -223,4 +223,24 @@ public class SaveFileServiceTests : IDisposable
             SafeDelete(penaltyDb);
         }
     }
+
+    [Fact]
+    public void ResetPenalty_should_not_cap_strikes_when_disabled()
+    {
+        var penaltyDb = Path.Combine(Path.GetTempPath(), $"test_nocap_{Guid.NewGuid()}.sav");
+        try
+        {
+            CreateTestDatabase(penaltyDb, savescumLocation: 1, stevenStrikes: 5);
+
+            _service.ResetPenalty(penaltyDb, clearHistory: false, capStrikes: false);
+
+            var info = _service.ReadStatus(penaltyDb);
+            Assert.Equal(0, info.SaveScumLocation);
+            Assert.Equal(5, info.StevenStrikes);
+        }
+        finally
+        {
+            SafeDelete(penaltyDb);
+        }
+    }
 }

@@ -305,6 +305,10 @@
                                     HorizontalAlignment="Stretch" Margin="0,0,0,10"/>
 
                             <!-- Options -->
+                            <CheckBox Content="{Binding [ChkCapStrikes], Source={x:Static loc:Loc.Instance}}"
+                                      IsChecked="{Binding CapStrikesToOne}"
+                                      Style="{StaticResource DarkCheckBox}"
+                                      Margin="0,0,0,4"/>
                             <CheckBox Content="{Binding [ChkAutoRelaunch], Source={x:Static loc:Loc.Instance}}"
                                       IsChecked="{Binding AutoRelaunchGame}"
                                       Style="{StaticResource DarkCheckBox}"
