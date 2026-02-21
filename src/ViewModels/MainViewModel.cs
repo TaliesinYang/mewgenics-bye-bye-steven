@@ -18,6 +18,7 @@ public partial class MainViewModel : ObservableObject
     private readonly BackupService _backupService = new();
     private readonly ProcessService _processService = new();
     private readonly SettingsService _settingsService = new();
+    private readonly SpeedHackService _speedHackService = new();
     private readonly DispatcherTimer _pollTimer;
 
     [ObservableProperty] private string _saveFilePath = string.Empty;
@@ -35,6 +36,8 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] private BackupEntry? _selectedBackup;
     [ObservableProperty] private LanguageOption _selectedLanguage;
     [ObservableProperty] private bool _isPathsExpanded = true;
+    [ObservableProperty] private bool _speedEnabled;
+    [ObservableProperty] private double _speedMultiplier = 1.0;
 
     public ObservableCollection<BackupEntry> Backups { get; } = [];
 
@@ -61,6 +64,8 @@ public partial class MainViewModel : ObservableObject
         MaxBackups = settings.MaxBackups;
         AutoRelaunchGame = settings.AutoRelaunchGame;
         GameExePath = settings.GameExePath;
+        SpeedEnabled = settings.SpeedEnabled;
+        SpeedMultiplier = settings.SpeedMultiplier > 0 ? settings.SpeedMultiplier : 1.0;
 
         StatusMessage = Loc.Instance["StatusReady"];
 
@@ -106,8 +111,34 @@ public partial class MainViewModel : ObservableObject
     partial void OnAutoRelaunchGameChanged(bool value) => SaveSettings();
     partial void OnGameExePathChanged(string value) => SaveSettings();
 
+    partial void OnSpeedEnabledChanged(bool value)
+    {
+        SaveSettings();
+        if (value)
+            TryInjectSpeedHack();
+        else
+        {
+            _speedHackService.SetSpeed(1.0);
+            StatusMessage = Loc.Instance["StatusSpeedDisabled"];
+        }
+    }
+
+    partial void OnSpeedMultiplierChanged(double value)
+    {
+        SaveSettings();
+        if (SpeedEnabled)
+            _speedHackService.SetSpeed(value);
+    }
+
     [RelayCommand]
     private void TogglePathsExpanded() => IsPathsExpanded = !IsPathsExpanded;
+
+    [RelayCommand]
+    private void ApplySpeed()
+    {
+        if (SpeedEnabled)
+            TryInjectSpeedHack();
+    }
 
     [RelayCommand]
     private void AutoFindPath()
@@ -346,6 +377,36 @@ public partial class MainViewModel : ObservableObject
     private bool CanRemovePenalty() => HasSaveFile && !IsBusy && IsPenaltyActive;
     private bool CanModifySave() => HasSaveFile && !IsBusy;
 
+    private void TryInjectSpeedHack()
+    {
+        var dllPath = _speedHackService.GetDllPath();
+        if (string.IsNullOrEmpty(dllPath))
+        {
+            StatusMessage = Loc.Instance["StatusSpeedDllNotFound"];
+            return;
+        }
+
+        var process = _processService.GetGameProcess();
+        if (process == null)
+        {
+            _speedHackService.EnsureSharedMemory(SpeedMultiplier);
+            return;
+        }
+
+        if (!_speedHackService.IsInjected(process.Id))
+        {
+            _speedHackService.EnsureSharedMemory(SpeedMultiplier);
+            if (!_speedHackService.InjectDll(process.Id, dllPath))
+            {
+                StatusMessage = Loc.Instance["StatusSpeedInjectionFailed"];
+                return;
+            }
+        }
+
+        _speedHackService.SetSpeed(SpeedMultiplier);
+        StatusMessage = string.Format(Loc.Instance["StatusSpeedApplied"], SpeedMultiplier);
+    }
+
     private void PollStatus()
     {
         var wasRunning = IsGameRunning;
@@ -354,6 +415,11 @@ public partial class MainViewModel : ObservableObject
         if (wasRunning && !IsGameRunning && HasSaveFile)
         {
             RefreshStatus();
+        }
+
+        if (!wasRunning && IsGameRunning && SpeedEnabled)
+        {
+            TryInjectSpeedHack();
         }
 
         RemovePenaltyCommand.NotifyCanExecuteChanged();
@@ -397,6 +463,8 @@ public partial class MainViewModel : ObservableObject
             AutoRelaunchGame = AutoRelaunchGame,
             GameExePath = GameExePath,
             Language = SelectedLanguage.Code,
+            SpeedEnabled = SpeedEnabled,
+            SpeedMultiplier = SpeedMultiplier,
         });
     }
 }
