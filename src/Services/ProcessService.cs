@@ -6,7 +6,8 @@ public class ProcessService
 {
     private const string GameProcessName = "Mewgenics";
     private const string SteamGameUrl = "steam://rungameid/686060";
-    private const int KillTimeoutMs = 5_000;
+    private const int CloseTimeoutMs = 3_000;
+    private const int KillTimeoutMs = 3_000;
 
     public bool IsGameRunning()
     {
@@ -26,6 +27,12 @@ public class ProcessService
 
         try
         {
+            // WM_CLOSE (same as Alt+F4) - lets the game clean up
+            process.CloseMainWindow();
+            if (process.WaitForExit(CloseTimeoutMs))
+                return true;
+
+            // Force kill as fallback
             process.Kill();
             return process.WaitForExit(KillTimeoutMs);
         }
