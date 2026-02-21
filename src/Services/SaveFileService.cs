@@ -57,6 +57,21 @@ public class SaveFileService
                     deleteCmd.CommandText = "DELETE FROM properties WHERE key LIKE 'NPCRSTRACKER_steven_savescum_%'";
                     deleteCmd.ExecuteNonQuery();
                 }
+                else
+                {
+                    // Cap steven strikes to 1 (keep only the first record)
+                    using var capCmd = conn.CreateCommand();
+                    capCmd.CommandText = @"
+                        DELETE FROM properties
+                        WHERE key LIKE 'NPCRSTRACKER_steven_savescum_%'
+                        AND key NOT IN (
+                            SELECT key FROM properties
+                            WHERE key LIKE 'NPCRSTRACKER_steven_savescum_%'
+                            ORDER BY key ASC
+                            LIMIT 1
+                        )";
+                    capCmd.ExecuteNonQuery();
+                }
 
                 transaction.Commit();
             }

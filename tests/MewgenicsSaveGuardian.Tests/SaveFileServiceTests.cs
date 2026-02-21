@@ -119,7 +119,7 @@ public class SaveFileServiceTests : IDisposable
             var info = _service.ReadStatus(penaltyDb);
             Assert.Equal(0, info.SaveScumLocation);
             Assert.False(info.IsPenaltyActive);
-            Assert.Equal(2, info.StevenStrikes);
+            Assert.Equal(1, info.StevenStrikes);
         }
         finally
         {
@@ -181,6 +181,46 @@ public class SaveFileServiceTests : IDisposable
         finally
         {
             SafeDelete(emptyDb);
+        }
+    }
+
+    [Fact]
+    public void ResetPenalty_should_cap_steven_strikes_to_one()
+    {
+        var penaltyDb = Path.Combine(Path.GetTempPath(), $"test_cap_{Guid.NewGuid()}.sav");
+        try
+        {
+            CreateTestDatabase(penaltyDb, savescumLocation: 1, stevenStrikes: 5);
+
+            _service.ResetPenalty(penaltyDb, clearHistory: false);
+
+            var info = _service.ReadStatus(penaltyDb);
+            Assert.Equal(0, info.SaveScumLocation);
+            Assert.Equal(1, info.StevenStrikes);
+        }
+        finally
+        {
+            SafeDelete(penaltyDb);
+        }
+    }
+
+    [Fact]
+    public void ResetPenalty_should_not_change_single_strike()
+    {
+        var penaltyDb = Path.Combine(Path.GetTempPath(), $"test_single_{Guid.NewGuid()}.sav");
+        try
+        {
+            CreateTestDatabase(penaltyDb, savescumLocation: 1, stevenStrikes: 1);
+
+            _service.ResetPenalty(penaltyDb, clearHistory: false);
+
+            var info = _service.ReadStatus(penaltyDb);
+            Assert.Equal(0, info.SaveScumLocation);
+            Assert.Equal(1, info.StevenStrikes);
+        }
+        finally
+        {
+            SafeDelete(penaltyDb);
         }
     }
 }
