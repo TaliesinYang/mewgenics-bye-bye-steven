@@ -1,5 +1,6 @@
 using System.Windows;
 using Microsoft.Win32;
+using MewgenicsSaveGuardian.Localization;
 using MewgenicsSaveGuardian.ViewModels;
 
 namespace MewgenicsSaveGuardian;
@@ -15,8 +16,8 @@ public partial class MainWindow : Window
     {
         var dialog = new OpenFileDialog
         {
-            Title = "Select Mewgenics Save File",
-            Filter = "Save files (*.sav)|*.sav|All files (*.*)|*.*",
+            Title = Loc.Instance["DialogTitle"],
+            Filter = Loc.Instance["DialogFilter"],
             InitialDirectory = System.IO.Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 "Glaiel Games", "Mewgenics"),
@@ -25,6 +26,20 @@ public partial class MainWindow : Window
         if (dialog.ShowDialog() == true && DataContext is MainViewModel vm)
         {
             vm.SaveFilePath = dialog.FileName;
+        }
+    }
+
+    private void OnBrowseExeClick(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFileDialog
+        {
+            Title = Loc.Instance["DialogExeTitle"],
+            Filter = Loc.Instance["DialogExeFilter"],
+        };
+
+        if (dialog.ShowDialog() == true && DataContext is MainViewModel vm)
+        {
+            vm.GameExePath = dialog.FileName;
         }
     }
 }

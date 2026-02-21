@@ -2,204 +2,398 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:MewgenicsSaveGuardian.ViewModels"
+        xmlns:loc="clr-namespace:MewgenicsSaveGuardian.Localization"
         xmlns:sys="clr-namespace:System;assembly=System.Runtime"
-        Title="Mewgenics Save Guardian"
-        Width="560" Height="720"
-        MinWidth="480" MinHeight="600"
+        Title="Bye Bye Steven"
+        Icon="Resources/app.ico"
+        Width="520" Height="720"
+        MinWidth="460" MinHeight="580"
         Background="{StaticResource BgMediumBrush}"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        FontFamily="Segoe UI">
 
     <Window.DataContext>
         <vm:MainViewModel/>
     </Window.DataContext>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="20">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+    </Window.Resources>
 
-            <!-- Title -->
-            <TextBlock Text="Mewgenics Save Guardian"
-                       FontSize="20" FontWeight="Bold"
-                       Foreground="{StaticResource AccentBlueBrush}"
-                       Margin="0,0,0,4"/>
-            <TextBlock Text="Bypass Steven's save-scum penalty with one click"
-                       Foreground="{StaticResource TextMutedBrush}"
-                       FontSize="12" Margin="0,0,0,16"/>
+    <Border BorderBrush="{StaticResource BorderSubtleBrush}" BorderThickness="1">
+        <DockPanel Margin="24,20,24,24">
 
-            <!-- Save File Path -->
-            <TextBlock Text="SAVE FILE" Style="{StaticResource SectionHeader}"/>
-            <DockPanel Margin="0,0,0,4">
-                <Button Content="Browse" DockPanel.Dock="Right"
-                        Style="{StaticResource SecondaryButton}"
-                        Click="OnBrowseClick" Margin="8,0,0,0"/>
-                <TextBox Text="{Binding SaveFilePath, UpdateSourceTrigger=PropertyChanged}"
-                         Style="{StaticResource DarkTextBox}"
-                         IsReadOnly="True"/>
-            </DockPanel>
-            <Button Content="Auto Find" Command="{Binding AutoFindPathCommand}"
-                    Style="{StaticResource SecondaryButton}"
-                    HorizontalAlignment="Right" Margin="0,4,0,0"/>
+            <!-- ==================== Header ==================== -->
+            <Grid DockPanel.Dock="Top" Margin="0,0,0,6">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-            <!-- Status -->
-            <TextBlock Text="STATUS" Style="{StaticResource SectionHeader}"/>
-            <Border Background="{StaticResource BgDarkBrush}" CornerRadius="8"
-                    Padding="16" Margin="0,0,0,8">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="{Binding [AppTitle], Source={x:Static loc:Loc.Instance}}"
+                               FontSize="14" FontWeight="Bold"
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               Margin="0,0,0,3"/>
+                    <TextBlock Text="{Binding [AppSubtitle], Source={x:Static loc:Loc.Instance}}"
+                               Foreground="{StaticResource TextMutedBrush}"
+                               FontSize="11"/>
+                </StackPanel>
 
-                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Game Process:"
-                               Style="{StaticResource StatusLabel}" Margin="0,0,16,6"/>
-                    <TextBlock Grid.Row="0" Grid.Column="1" Margin="0,0,0,6">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock" BasedOn="{StaticResource StatusValue}">
-                                <Setter Property="Text" Value="Not Running"/>
-                                <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsGameRunning}" Value="True">
-                                        <Setter Property="Text" Value="Running"/>
-                                        <Setter Property="Foreground" Value="{StaticResource AccentGreenBrush}"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
+                <ComboBox Grid.Column="1"
+                          ItemsSource="{Binding AvailableLanguages}"
+                          SelectedItem="{Binding SelectedLanguage}"
+                          DisplayMemberPath="Name"
+                          Style="{StaticResource DarkComboBox}"
+                          Width="100" VerticalAlignment="Top"/>
+            </Grid>
 
-                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Save Scum Flag:"
-                               Style="{StaticResource StatusLabel}" Margin="0,0,16,6"/>
-                    <TextBlock Grid.Row="1" Grid.Column="1" Margin="0,0,0,6">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock" BasedOn="{StaticResource StatusValue}">
-                                <Setter Property="Text" Value="0 (Safe)"/>
-                                <Setter Property="Foreground" Value="{StaticResource AccentGreenBrush}"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsPenaltyActive}" Value="True">
-                                        <Setter Property="Text" Value="1 (Penalty Active!)"/>
-                                        <Setter Property="Foreground" Value="{StaticResource AccentRedBrush}"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
+            <Rectangle DockPanel.Dock="Top" Height="1"
+                       Fill="{StaticResource BorderSubtleBrush}" Margin="0,10,0,0"/>
 
-                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Steven Met:"
-                               Style="{StaticResource StatusLabel}" Margin="0,0,16,6"/>
-                    <TextBlock Grid.Row="2" Grid.Column="1" Margin="0,0,0,6">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock" BasedOn="{StaticResource StatusValue}">
-                                <Setter Property="Text" Value="No"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding StevenMet}" Value="True">
-                                        <Setter Property="Text" Value="Yes"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
+            <!-- ==================== Collapsible Paths Header ==================== -->
+            <ToggleButton DockPanel.Dock="Top" IsChecked="{Binding IsPathsExpanded}"
+                          Cursor="Hand" Margin="0,0,0,0">
+                <ToggleButton.Template>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border Background="Transparent" Padding="0,12,0,6">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock x:Name="chevron" Text="&#x25BC;"
+                                           FontSize="8" Margin="0,1,6,0"
+                                           Foreground="{StaticResource TextMutedBrush}"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding [SectionPaths], Source={x:Static loc:Loc.Instance}}"
+                                           Foreground="{StaticResource TextMutedBrush}"
+                                           FontFamily="Segoe UI" FontSize="10.5"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="False">
+                                <Setter TargetName="chevron" Property="Text" Value="&#x25B6;"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </ToggleButton.Template>
+            </ToggleButton>
 
-                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Steven Strikes:"
-                               Style="{StaticResource StatusLabel}" Margin="0,0,16,6"/>
-                    <TextBlock Grid.Row="3" Grid.Column="1"
-                               Text="{Binding StevenStrikes}"
-                               Style="{StaticResource StatusValue}" Margin="0,0,0,6"/>
+            <!-- ==================== Paths Content (collapsible) ==================== -->
+            <StackPanel DockPanel.Dock="Top"
+                        Visibility="{Binding IsPathsExpanded, Converter={StaticResource BoolToVis}}">
 
-                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Current Day:"
-                               Style="{StaticResource StatusLabel}" Margin="0,0,16,6"/>
-                    <TextBlock Grid.Row="4" Grid.Column="1"
-                               Text="{Binding CurrentDay}"
-                               Style="{StaticResource StatusValue}" Margin="0,0,0,6"/>
+                <!-- Save File Path -->
+                <TextBlock Text="{Binding [SectionSaveFile], Source={x:Static loc:Loc.Instance}}"
+                           Foreground="{StaticResource TextMutedBrush}"
+                           FontFamily="Segoe UI" FontSize="10.5" FontWeight="SemiBold"
+                           Margin="0,4,0,8"/>
+                <DockPanel Margin="0,0,0,6">
+                    <Button Content="{Binding [BtnBrowse], Source={x:Static loc:Loc.Instance}}"
+                            DockPanel.Dock="Right"
+                            Style="{StaticResource SecondaryButton}"
+                            Click="OnBrowseClick" Margin="8,0,0,0"/>
+                    <Button Content="{Binding [BtnAuto], Source={x:Static loc:Loc.Instance}}"
+                            DockPanel.Dock="Right"
+                            Command="{Binding AutoFindPathCommand}"
+                            Style="{StaticResource SecondaryButton}" Margin="8,0,0,0"/>
+                    <TextBox Text="{Binding SaveFilePath, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource DarkTextBox}"
+                             IsReadOnly="True"/>
+                </DockPanel>
 
-                    <TextBlock Grid.Row="5" Grid.Column="0" Text="On Adventure:"
-                               Style="{StaticResource StatusLabel}" Margin="0,0,16,0"/>
-                    <TextBlock Grid.Row="5" Grid.Column="1">
-                        <TextBlock.Style>
-                            <Style TargetType="TextBlock" BasedOn="{StaticResource StatusValue}">
-                                <Setter Property="Text" Value="No"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding OnAdventure}" Value="True">
-                                        <Setter Property="Text" Value="Yes"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </TextBlock.Style>
-                    </TextBlock>
-                </Grid>
-            </Border>
-
-            <!-- Actions -->
-            <TextBlock Text="ACTIONS" Style="{StaticResource SectionHeader}"/>
-            <WrapPanel Margin="0,0,0,8">
-                <Button Content="Remove Penalty" Command="{Binding RemovePenaltyCommand}"
-                        Style="{StaticResource PrimaryButton}" Margin="0,0,8,0"
-                        FontSize="15" Padding="24,10"/>
-                <Button Content="Relaunch Game" Command="{Binding LaunchGameCommand}"
-                        Style="{StaticResource SecondaryButton}" Margin="0,0,8,0"/>
-            </WrapPanel>
-
-            <CheckBox Content="Also clear Steven encounter history"
-                      IsChecked="{Binding ClearStevenHistory}"
-                      Style="{StaticResource DarkCheckBox}"/>
-            <CheckBox Content="Auto-relaunch game after fix"
-                      IsChecked="{Binding AutoRelaunchGame}"
-                      Style="{StaticResource DarkCheckBox}"/>
-
-            <!-- Status Bar -->
-            <Border Background="{StaticResource BgDarkBrush}" CornerRadius="6"
-                    Padding="12,8" Margin="0,12,0,0">
-                <TextBlock Text="{Binding StatusMessage}"
-                           Foreground="{StaticResource AccentYellowBrush}"
-                           FontSize="12"/>
-            </Border>
-
-            <!-- Backups -->
-            <TextBlock Text="BACKUPS" Style="{StaticResource SectionHeader}"/>
-            <DataGrid ItemsSource="{Binding Backups}"
-                      SelectedItem="{Binding SelectedBackup}"
-                      Style="{StaticResource DarkDataGrid}"
-                      AutoGenerateColumns="False"
-                      IsReadOnly="True"
-                      SelectionMode="Single"
-                      Height="160" Margin="0,0,0,8">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Timestamp" Width="*"
-                                        Binding="{Binding Timestamp, StringFormat='yyyy-MM-dd HH:mm:ss'}"/>
-                    <DataGridTextColumn Header="Day" Width="50"
-                                        Binding="{Binding CurrentDay}"/>
-                    <DataGridTextColumn Header="Flag" Width="50"
-                                        Binding="{Binding SaveScumFlag}"/>
-                    <DataGridTextColumn Header="Size" Width="70"
-                                        Binding="{Binding FileSizeBytes, StringFormat='{}{0:N0} B'}"/>
-                </DataGrid.Columns>
-            </DataGrid>
-
-            <WrapPanel Margin="0,0,0,8">
-                <Button Content="Restore Selected" Command="{Binding RestoreBackupCommand}"
-                        Style="{StaticResource SecondaryButton}" Margin="0,0,8,0"/>
-                <Button Content="Create Backup Now" Command="{Binding CreateBackupCommand}"
-                        Style="{StaticResource SecondaryButton}"/>
-            </WrapPanel>
-
-            <!-- Settings -->
-            <TextBlock Text="SETTINGS" Style="{StaticResource SectionHeader}"/>
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                <TextBlock Text="Max backups:" Style="{StaticResource StatusLabel}" Margin="0,0,8,0"/>
-                <ComboBox SelectedItem="{Binding MaxBackups}" Width="60">
-                    <sys:Int32>3</sys:Int32>
-                    <sys:Int32>5</sys:Int32>
-                    <sys:Int32>10</sys:Int32>
-                    <sys:Int32>20</sys:Int32>
-                </ComboBox>
+                <!-- Game Executable Path -->
+                <TextBlock Text="{Binding [LblGameExe], Source={x:Static loc:Loc.Instance}}"
+                           Style="{StaticResource StatusLabel}" Margin="0,4,0,6"/>
+                <DockPanel Margin="0,0,0,6">
+                    <Button Content="{Binding [BtnBrowseExe], Source={x:Static loc:Loc.Instance}}"
+                            DockPanel.Dock="Right"
+                            Style="{StaticResource SecondaryButton}"
+                            Click="OnBrowseExeClick" Margin="8,0,0,0"/>
+                    <Button Content="{Binding [BtnAutoExe], Source={x:Static loc:Loc.Instance}}"
+                            DockPanel.Dock="Right"
+                            Command="{Binding AutoDetectGameExeCommand}"
+                            Style="{StaticResource SecondaryButton}" Margin="8,0,0,0"/>
+                    <TextBox Text="{Binding GameExePath, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource DarkTextBox}"
+                             IsReadOnly="True"/>
+                </DockPanel>
             </StackPanel>
 
-        </StackPanel>
-    </ScrollViewer>
+            <!-- ==================== Status Bar (bottom) ==================== -->
+            <Border DockPanel.Dock="Bottom"
+                    Background="{StaticResource BgDeepBrush}" CornerRadius="3"
+                    Padding="10,7" Margin="0,12,0,0"
+                    BorderBrush="{StaticResource BorderSubtleBrush}"
+                    BorderThickness="1">
+                <TextBlock Text="{Binding StatusMessage}"
+                           Foreground="{StaticResource AccentYellowBrush}"
+                           FontFamily="Consolas"
+                           FontSize="11"/>
+            </Border>
+
+            <!-- ==================== Tab Control ==================== -->
+            <TabControl Style="{StaticResource DarkTabControl}" Margin="0,6,0,0">
+
+                <!-- ===== Tab 1: Status & Actions ===== -->
+                <TabItem Style="{StaticResource DarkTabItem}"
+                         Header="{Binding [TabStatus], Source={x:Static loc:Loc.Instance}}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+
+                            <!-- Status Panel -->
+                            <Border Background="{StaticResource BgDarkBrush}" CornerRadius="4"
+                                    Padding="16,14" Margin="0,4,0,0"
+                                    BorderBrush="{StaticResource BorderSubtleBrush}"
+                                    BorderThickness="1">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="26"/>
+                                        <RowDefinition Height="26"/>
+                                        <RowDefinition Height="26"/>
+                                        <RowDefinition Height="26"/>
+                                        <RowDefinition Height="26"/>
+                                        <RowDefinition Height="26"/>
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Game Process -->
+                                    <TextBlock Grid.Row="0" Grid.Column="0"
+                                               Text="{Binding [LblGameProcess], Source={x:Static loc:Loc.Instance}}"
+                                               Style="{StaticResource StatusLabel}"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource StatusValue}">
+                                                <Setter Property="Text" Value="{Binding [ValNotRunning], Source={x:Static loc:Loc.Instance}}"/>
+                                                <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsGameRunning}" Value="True">
+                                                        <Setter Property="Text" Value="{Binding [ValRunning], Source={x:Static loc:Loc.Instance}}"/>
+                                                        <Setter Property="Foreground" Value="{StaticResource AccentGreenBrush}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <!-- Deja Vu Flag -->
+                                    <TextBlock Grid.Row="1" Grid.Column="0"
+                                               Text="{Binding [LblPenaltyFlag], Source={x:Static loc:Loc.Instance}}"
+                                               Style="{StaticResource StatusLabel}"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource StatusValue}">
+                                                <Setter Property="Text" Value="{Binding [ValSafe], Source={x:Static loc:Loc.Instance}}"/>
+                                                <Setter Property="Foreground" Value="{StaticResource AccentGreenBrush}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsPenaltyActive}" Value="True">
+                                                        <Setter Property="Text" Value="{Binding [ValActive], Source={x:Static loc:Loc.Instance}}"/>
+                                                        <Setter Property="Foreground" Value="{StaticResource AccentRedBrush}"/>
+                                                        <Setter Property="FontWeight" Value="Bold"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <!-- Steven Met -->
+                                    <TextBlock Grid.Row="2" Grid.Column="0"
+                                               Text="{Binding [LblStevenMet], Source={x:Static loc:Loc.Instance}}"
+                                               Style="{StaticResource StatusLabel}"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource StatusValue}">
+                                                <Setter Property="Text" Value="{Binding [ValNo], Source={x:Static loc:Loc.Instance}}"/>
+                                                <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding StevenMet}" Value="True">
+                                                        <Setter Property="Text" Value="{Binding [ValYes], Source={x:Static loc:Loc.Instance}}"/>
+                                                        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <!-- Steven Strikes -->
+                                    <TextBlock Grid.Row="3" Grid.Column="0"
+                                               Text="{Binding [LblStevenStrikes], Source={x:Static loc:Loc.Instance}}"
+                                               Style="{StaticResource StatusLabel}"/>
+                                    <TextBlock Grid.Row="3" Grid.Column="1"
+                                               Text="{Binding StevenStrikes}"
+                                               Style="{StaticResource StatusValue}"/>
+
+                                    <!-- Current Day -->
+                                    <TextBlock Grid.Row="4" Grid.Column="0"
+                                               Text="{Binding [LblCurrentDay], Source={x:Static loc:Loc.Instance}}"
+                                               Style="{StaticResource StatusLabel}"/>
+                                    <TextBlock Grid.Row="4" Grid.Column="1"
+                                               Text="{Binding CurrentDay}"
+                                               Style="{StaticResource StatusValue}"/>
+
+                                    <!-- On Adventure -->
+                                    <TextBlock Grid.Row="5" Grid.Column="0"
+                                               Text="{Binding [LblOnAdventure], Source={x:Static loc:Loc.Instance}}"
+                                               Style="{StaticResource StatusLabel}"/>
+                                    <TextBlock Grid.Row="5" Grid.Column="1">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock" BasedOn="{StaticResource StatusValue}">
+                                                <Setter Property="Text" Value="{Binding [ValNo], Source={x:Static loc:Loc.Instance}}"/>
+                                                <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding OnAdventure}" Value="True">
+                                                        <Setter Property="Text" Value="{Binding [ValYes], Source={x:Static loc:Loc.Instance}}"/>
+                                                        <Setter Property="Foreground" Value="{StaticResource AccentYellowBrush}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
+                            </Border>
+
+                            <!-- Steven Context Panel -->
+                            <Border CornerRadius="4" Padding="12,9" Margin="0,8,0,0"
+                                    BorderThickness="1">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="{StaticResource BgDeepBrush}"/>
+                                        <Setter Property="BorderBrush" Value="{StaticResource BorderSubtleBrush}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsPenaltyActive}" Value="True">
+                                                <Setter Property="BorderBrush" Value="{StaticResource AccentRedBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <TextBlock FontSize="11.5" FontStyle="Italic">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Text" Value="{Binding [StevenSafe], Source={x:Static loc:Loc.Instance}}"/>
+                                            <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsPenaltyActive}" Value="True">
+                                                    <Setter Property="Text" Value="{Binding [StevenWatch], Source={x:Static loc:Loc.Instance}}"/>
+                                                    <Setter Property="Foreground" Value="{StaticResource AccentRedBrush}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Border>
+
+                            <Rectangle Height="1" Fill="{StaticResource BorderSubtleBrush}" Margin="0,14,0,0"/>
+
+                            <!-- Actions -->
+                            <TextBlock Text="{Binding [SectionActions], Source={x:Static loc:Loc.Instance}}"
+                                       Style="{StaticResource SectionHeader}"/>
+
+                            <!-- Remove Penalty -->
+                            <Button Content="{Binding [BtnRemovePenalty], Source={x:Static loc:Loc.Instance}}"
+                                    Command="{Binding RemovePenaltyCommand}"
+                                    Style="{StaticResource PrimaryButton}"
+                                    FontSize="14" Padding="0,11"
+                                    HorizontalAlignment="Stretch" Margin="0,0,0,8"/>
+
+                            <!-- Restart & Clear -->
+                            <Button Content="{Binding [BtnRestartClear], Source={x:Static loc:Loc.Instance}}"
+                                    Command="{Binding RestartAndClearCommand}"
+                                    Style="{StaticResource DangerButton}"
+                                    FontSize="13" Padding="0,9"
+                                    HorizontalAlignment="Stretch" Margin="0,0,0,10"/>
+
+                            <!-- Options -->
+                            <CheckBox Content="{Binding [ChkAutoRelaunch], Source={x:Static loc:Loc.Instance}}"
+                                      IsChecked="{Binding AutoRelaunchGame}"
+                                      Style="{StaticResource DarkCheckBox}"
+                                      Margin="0,0,0,10"/>
+
+                            <!-- Relaunch Game -->
+                            <Button Content="{Binding [BtnRelaunchGame], Source={x:Static loc:Loc.Instance}}"
+                                    Command="{Binding LaunchGameCommand}"
+                                    Style="{StaticResource SecondaryButton}"
+                                    HorizontalAlignment="Left"/>
+
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- ===== Tab 2: Backups ===== -->
+                <TabItem Style="{StaticResource DarkTabItem}"
+                         Header="{Binding [TabBackups], Source={x:Static loc:Loc.Instance}}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+
+                            <DataGrid ItemsSource="{Binding Backups}"
+                                      SelectedItem="{Binding SelectedBackup}"
+                                      Style="{StaticResource DarkDataGrid}"
+                                      AutoGenerateColumns="False"
+                                      IsReadOnly="True"
+                                      SelectionMode="Single"
+                                      Height="200" Margin="0,4,0,10">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Width="*"
+                                                        Binding="{Binding Timestamp, StringFormat='yyyy-MM-dd HH:mm:ss'}">
+                                        <DataGridTextColumn.Header>
+                                            <TextBlock Text="{Binding [ColTime], Source={x:Static loc:Loc.Instance}}"/>
+                                        </DataGridTextColumn.Header>
+                                    </DataGridTextColumn>
+                                    <DataGridTextColumn Width="45"
+                                                        Binding="{Binding CurrentDay}">
+                                        <DataGridTextColumn.Header>
+                                            <TextBlock Text="{Binding [ColDay], Source={x:Static loc:Loc.Instance}}"/>
+                                        </DataGridTextColumn.Header>
+                                    </DataGridTextColumn>
+                                    <DataGridTextColumn Width="45"
+                                                        Binding="{Binding SaveScumFlag}">
+                                        <DataGridTextColumn.Header>
+                                            <TextBlock Text="{Binding [ColFlag], Source={x:Static loc:Loc.Instance}}"/>
+                                        </DataGridTextColumn.Header>
+                                    </DataGridTextColumn>
+                                    <DataGridTextColumn Width="65"
+                                                        Binding="{Binding FileSizeBytes, StringFormat='{}{0:N0} B'}">
+                                        <DataGridTextColumn.Header>
+                                            <TextBlock Text="{Binding [ColSize], Source={x:Static loc:Loc.Instance}}"/>
+                                        </DataGridTextColumn.Header>
+                                    </DataGridTextColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,0">
+                                <Button Content="{Binding [BtnRestoreSelected], Source={x:Static loc:Loc.Instance}}"
+                                        Command="{Binding RestoreBackupCommand}"
+                                        Style="{StaticResource SecondaryButton}" Margin="0,0,8,0"/>
+                                <Button Content="{Binding [BtnCreateBackup], Source={x:Static loc:Loc.Instance}}"
+                                        Command="{Binding CreateBackupCommand}"
+                                        Style="{StaticResource SecondaryButton}"/>
+                            </StackPanel>
+
+                            <Rectangle Height="1" Fill="{StaticResource BorderSubtleBrush}" Margin="0,14,0,0"/>
+
+                            <!-- Settings -->
+                            <TextBlock Text="{Binding [SectionSettings], Source={x:Static loc:Loc.Instance}}"
+                                       Style="{StaticResource SectionHeader}"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                <TextBlock Text="{Binding [LblMaxBackups], Source={x:Static loc:Loc.Instance}}"
+                                           Style="{StaticResource StatusLabel}" Margin="0,0,10,0"/>
+                                <ComboBox SelectedItem="{Binding MaxBackups}" Width="55"
+                                          Style="{StaticResource DarkComboBox}">
+                                    <sys:Int32>3</sys:Int32>
+                                    <sys:Int32>5</sys:Int32>
+                                    <sys:Int32>10</sys:Int32>
+                                    <sys:Int32>20</sys:Int32>
+                                </ComboBox>
+                            </StackPanel>
+
+
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+            </TabControl>
+
+        </DockPanel>
+    </Border>
 </Window>
