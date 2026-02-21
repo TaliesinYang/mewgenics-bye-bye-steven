@@ -108,6 +108,14 @@ public sealed class Loc : INotifyPropertyChanged
             ["StatusExeDetected"] = "Game path detected from running process.",
             ["StatusExeNotDetected"] = "Game not running. Start the game first, then click Detect.",
             ["StatusLaunchingDirect"] = "Launching game directly...",
+            ["TabTools"] = "TOOLS",
+            ["SectionSpeed"] = "SPEED CONTROL",
+            ["ChkSpeedEnabled"] = "Enable Speedhack",
+            ["LblSpeed"] = "Speed",
+            ["StatusSpeedApplied"] = "Speed hack applied: {0}x",
+            ["StatusSpeedDllNotFound"] = "speedhack.dll not found.",
+            ["StatusSpeedInjectionFailed"] = "Speed hack injection failed.",
+            ["StatusSpeedDisabled"] = "Speed hack disabled.",
         },
         ["zh-CN"] = new()
         {
@@ -177,6 +185,14 @@ public sealed class Loc : INotifyPropertyChanged
             ["StatusExeDetected"] = "已从运行中的进程检测到游戏路径。",
             ["StatusExeNotDetected"] = "游戏未运行。请先启动游戏, 再点击检测。",
             ["StatusLaunchingDirect"] = "正在直接启动游戏...",
+            ["TabTools"] = "工具",
+            ["SectionSpeed"] = "变速控制",
+            ["ChkSpeedEnabled"] = "启用变速",
+            ["LblSpeed"] = "速度",
+            ["StatusSpeedApplied"] = "变速已生效: {0}x",
+            ["StatusSpeedDllNotFound"] = "未找到 speedhack.dll",
+            ["StatusSpeedInjectionFailed"] = "变速注入失败。",
+            ["StatusSpeedDisabled"] = "变速已关闭。",
         },
         ["zh-TW"] = new()
         {
@@ -246,6 +262,14 @@ public sealed class Loc : INotifyPropertyChanged
             ["StatusExeDetected"] = "已從執行中的程序偵測到遊戲路徑。",
             ["StatusExeNotDetected"] = "遊戲未執行。請先啟動遊戲, 再點擊偵測。",
             ["StatusLaunchingDirect"] = "正在直接啟動遊戲...",
+            ["TabTools"] = "工具",
+            ["SectionSpeed"] = "變速控制",
+            ["ChkSpeedEnabled"] = "啟用變速",
+            ["LblSpeed"] = "速度",
+            ["StatusSpeedApplied"] = "變速已生效: {0}x",
+            ["StatusSpeedDllNotFound"] = "未找到 speedhack.dll",
+            ["StatusSpeedInjectionFailed"] = "變速注入失敗。",
+            ["StatusSpeedDisabled"] = "變速已關閉。",
         },
         ["ja"] = new()
         {
@@ -315,6 +339,14 @@ public sealed class Loc : INotifyPropertyChanged
             ["StatusExeDetected"] = "実行中のプロセスからゲームパスを検出しました。",
             ["StatusExeNotDetected"] = "ゲーム未実行。先にゲームを起動してから検出してください。",
             ["StatusLaunchingDirect"] = "ゲームを直接起動中...",
+            ["TabTools"] = "ツール",
+            ["SectionSpeed"] = "速度設定",
+            ["ChkSpeedEnabled"] = "速度ハック有効",
+            ["LblSpeed"] = "速度",
+            ["StatusSpeedApplied"] = "速度ハック適用: {0}x",
+            ["StatusSpeedDllNotFound"] = "speedhack.dll が見つかりません。",
+            ["StatusSpeedInjectionFailed"] = "速度ハック注入に失敗しました。",
+            ["StatusSpeedDisabled"] = "速度ハック無効化。",
         },
         ["ko"] = new()
         {
@@ -384,6 +416,14 @@ public sealed class Loc : INotifyPropertyChanged
             ["StatusExeDetected"] = "실행 중인 프로세스에서 게임 경로를 감지했습니다.",
             ["StatusExeNotDetected"] = "게임 미실행. 먼저 게임을 시작한 후 감지를 클릭하세요.",
             ["StatusLaunchingDirect"] = "게임을 직접 실행 중...",
+            ["TabTools"] = "도구",
+            ["SectionSpeed"] = "속도 조절",
+            ["ChkSpeedEnabled"] = "속도 핵 활성화",
+            ["LblSpeed"] = "속도",
+            ["StatusSpeedApplied"] = "속도 핵 적용: {0}x",
+            ["StatusSpeedDllNotFound"] = "speedhack.dll을 찾을 수 없습니다.",
+            ["StatusSpeedInjectionFailed"] = "속도 핵 주입 실패.",
+            ["StatusSpeedDisabled"] = "속도 핵 비활성화.",
         },
     };
 }
