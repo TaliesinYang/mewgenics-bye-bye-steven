@@ -23,4 +23,8 @@
     <Resource Include="Resources\app.ico" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="..\native\speedhack.dll" CopyToOutputDirectory="PreserveNewest" Link="speedhack.dll" ExcludeFromSingleFile="true" />
+  </ItemGroup>
+
 </Project>
