@@ -1,12 +1,205 @@
-﻿<Window x:Class="MewgenicsSaveGuardian.MainWindow"
+<Window x:Class="MewgenicsSaveGuardian.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:MewgenicsSaveGuardian"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        xmlns:vm="clr-namespace:MewgenicsSaveGuardian.ViewModels"
+        xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+        Title="Mewgenics Save Guardian"
+        Width="560" Height="720"
+        MinWidth="480" MinHeight="600"
+        Background="{StaticResource BgMediumBrush}"
+        WindowStartupLocation="CenterScreen">
 
-    </Grid>
+    <Window.DataContext>
+        <vm:MainViewModel/>
+    </Window.DataContext>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="20">
+
+            <!-- Title -->
+            <TextBlock Text="Mewgenics Save Guardian"
+                       FontSize="20" FontWeight="Bold"
+                       Foreground="{StaticResource AccentBlueBrush}"
+                       Margin="0,0,0,4"/>
+            <TextBlock Text="Bypass Steven's save-scum penalty with one click"
+                       Foreground="{StaticResource TextMutedBrush}"
+                       FontSize="12" Margin="0,0,0,16"/>
+
+            <!-- Save File Path -->
+            <TextBlock Text="SAVE FILE" Style="{StaticResource SectionHeader}"/>
+            <DockPanel Margin="0,0,0,4">
+                <Button Content="Browse" DockPanel.Dock="Right"
+                        Style="{StaticResource SecondaryButton}"
+                        Click="OnBrowseClick" Margin="8,0,0,0"/>
+                <TextBox Text="{Binding SaveFilePath, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{StaticResource DarkTextBox}"
+                         IsReadOnly="True"/>
+            </DockPanel>
+            <Button Content="Auto Find" Command="{Binding AutoFindPathCommand}"
+                    Style="{StaticResource SecondaryButton}"
+                    HorizontalAlignment="Right" Margin="0,4,0,0"/>
+
+            <!-- Status -->
+            <TextBlock Text="STATUS" Style="{StaticResource SectionHeader}"/>
+            <Border Background="{StaticResource BgDarkBrush}" CornerRadius="8"
+                    Padding="16" Margin="0,0,0,8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Game Process:"
+                               Style="{StaticResource StatusLabel}" Margin="0,0,16,6"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Margin="0,0,0,6">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource StatusValue}">
+                                <Setter Property="Text" Value="Not Running"/>
+                                <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsGameRunning}" Value="True">
+                                        <Setter Property="Text" Value="Running"/>
+                                        <Setter Property="Foreground" Value="{StaticResource AccentGreenBrush}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Save Scum Flag:"
+                               Style="{StaticResource StatusLabel}" Margin="0,0,16,6"/>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Margin="0,0,0,6">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource StatusValue}">
+                                <Setter Property="Text" Value="0 (Safe)"/>
+                                <Setter Property="Foreground" Value="{StaticResource AccentGreenBrush}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsPenaltyActive}" Value="True">
+                                        <Setter Property="Text" Value="1 (Penalty Active!)"/>
+                                        <Setter Property="Foreground" Value="{StaticResource AccentRedBrush}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Steven Met:"
+                               Style="{StaticResource StatusLabel}" Margin="0,0,16,6"/>
+                    <TextBlock Grid.Row="2" Grid.Column="1" Margin="0,0,0,6">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource StatusValue}">
+                                <Setter Property="Text" Value="No"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding StevenMet}" Value="True">
+                                        <Setter Property="Text" Value="Yes"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Steven Strikes:"
+                               Style="{StaticResource StatusLabel}" Margin="0,0,16,6"/>
+                    <TextBlock Grid.Row="3" Grid.Column="1"
+                               Text="{Binding StevenStrikes}"
+                               Style="{StaticResource StatusValue}" Margin="0,0,0,6"/>
+
+                    <TextBlock Grid.Row="4" Grid.Column="0" Text="Current Day:"
+                               Style="{StaticResource StatusLabel}" Margin="0,0,16,6"/>
+                    <TextBlock Grid.Row="4" Grid.Column="1"
+                               Text="{Binding CurrentDay}"
+                               Style="{StaticResource StatusValue}" Margin="0,0,0,6"/>
+
+                    <TextBlock Grid.Row="5" Grid.Column="0" Text="On Adventure:"
+                               Style="{StaticResource StatusLabel}" Margin="0,0,16,0"/>
+                    <TextBlock Grid.Row="5" Grid.Column="1">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock" BasedOn="{StaticResource StatusValue}">
+                                <Setter Property="Text" Value="No"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding OnAdventure}" Value="True">
+                                        <Setter Property="Text" Value="Yes"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+            </Border>
+
+            <!-- Actions -->
+            <TextBlock Text="ACTIONS" Style="{StaticResource SectionHeader}"/>
+            <WrapPanel Margin="0,0,0,8">
+                <Button Content="Remove Penalty" Command="{Binding RemovePenaltyCommand}"
+                        Style="{StaticResource PrimaryButton}" Margin="0,0,8,0"
+                        FontSize="15" Padding="24,10"/>
+                <Button Content="Relaunch Game" Command="{Binding LaunchGameCommand}"
+                        Style="{StaticResource SecondaryButton}" Margin="0,0,8,0"/>
+            </WrapPanel>
+
+            <CheckBox Content="Also clear Steven encounter history"
+                      IsChecked="{Binding ClearStevenHistory}"
+                      Style="{StaticResource DarkCheckBox}"/>
+            <CheckBox Content="Auto-relaunch game after fix"
+                      IsChecked="{Binding AutoRelaunchGame}"
+                      Style="{StaticResource DarkCheckBox}"/>
+
+            <!-- Status Bar -->
+            <Border Background="{StaticResource BgDarkBrush}" CornerRadius="6"
+                    Padding="12,8" Margin="0,12,0,0">
+                <TextBlock Text="{Binding StatusMessage}"
+                           Foreground="{StaticResource AccentYellowBrush}"
+                           FontSize="12"/>
+            </Border>
+
+            <!-- Backups -->
+            <TextBlock Text="BACKUPS" Style="{StaticResource SectionHeader}"/>
+            <DataGrid ItemsSource="{Binding Backups}"
+                      SelectedItem="{Binding SelectedBackup}"
+                      Style="{StaticResource DarkDataGrid}"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      SelectionMode="Single"
+                      Height="160" Margin="0,0,0,8">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Timestamp" Width="*"
+                                        Binding="{Binding Timestamp, StringFormat='yyyy-MM-dd HH:mm:ss'}"/>
+                    <DataGridTextColumn Header="Day" Width="50"
+                                        Binding="{Binding CurrentDay}"/>
+                    <DataGridTextColumn Header="Flag" Width="50"
+                                        Binding="{Binding SaveScumFlag}"/>
+                    <DataGridTextColumn Header="Size" Width="70"
+                                        Binding="{Binding FileSizeBytes, StringFormat='{}{0:N0} B'}"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <WrapPanel Margin="0,0,0,8">
+                <Button Content="Restore Selected" Command="{Binding RestoreBackupCommand}"
+                        Style="{StaticResource SecondaryButton}" Margin="0,0,8,0"/>
+                <Button Content="Create Backup Now" Command="{Binding CreateBackupCommand}"
+                        Style="{StaticResource SecondaryButton}"/>
+            </WrapPanel>
+
+            <!-- Settings -->
+            <TextBlock Text="SETTINGS" Style="{StaticResource SectionHeader}"/>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                <TextBlock Text="Max backups:" Style="{StaticResource StatusLabel}" Margin="0,0,8,0"/>
+                <ComboBox SelectedItem="{Binding MaxBackups}" Width="60">
+                    <sys:Int32>3</sys:Int32>
+                    <sys:Int32>5</sys:Int32>
+                    <sys:Int32>10</sys:Int32>
+                    <sys:Int32>20</sys:Int32>
+                </ComboBox>
+            </StackPanel>
+
+        </StackPanel>
+    </ScrollViewer>
 </Window>
