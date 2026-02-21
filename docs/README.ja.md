@@ -6,6 +6,10 @@
 
 Steven はセーブの再読み込みを検出して罰を与える NPC です。このツールはワンクリックでペナルティをリセットします。
 
+<p align="center">
+  <img src="screenshot.png" alt="Bye Bye Steven" width="400">
+</p>
+
 ## 機能
 
 - ワンクリックでペナルティ解除

@@ -6,6 +6,10 @@
 
 Steven 是一个能检测到你重新加载存档的 NPC，然后会出来惩罚你。这个工具一键重置惩罚。
 
+<p align="center">
+  <img src="screenshot.png" alt="Bye Bye Steven" width="400">
+</p>
+
 ## 功能
 
 - 一键移除惩罚

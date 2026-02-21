@@ -6,6 +6,10 @@
 
 Steven 是一個能偵測到你重新載入存檔的 NPC，然後會出來懲罰你。這個工具一鍵重置懲罰。
 
+<p align="center">
+  <img src="screenshot.png" alt="Bye Bye Steven" width="400">
+</p>
+
 ## 功能
 
 - 一鍵移除懲罰

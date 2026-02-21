@@ -6,6 +6,10 @@
 
 Steven은 세이브 재로드를 감지하고 플레이어를 벌하는 NPC입니다. 이 도구는 한 번의 클릭으로 페널티를 리셋합니다.
 
+<p align="center">
+  <img src="screenshot.png" alt="Bye Bye Steven" width="400">
+</p>
+
 ## 기능
 
 - 원클릭 페널티 제거
