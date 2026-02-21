@@ -6,7 +6,7 @@ public class ProcessService
 {
     private const string GameProcessName = "Mewgenics";
     private const string SteamGameUrl = "steam://rungameid/686060";
-    private const int GracefulCloseTimeoutMs = 10_000;
+    private const int KillTimeoutMs = 5_000;
 
     public bool IsGameRunning()
     {
@@ -26,12 +26,8 @@ public class ProcessService
 
         try
         {
-            process.CloseMainWindow();
-            if (process.WaitForExit(GracefulCloseTimeoutMs))
-                return true;
-
             process.Kill();
-            return process.WaitForExit(5_000);
+            return process.WaitForExit(KillTimeoutMs);
         }
         catch (InvalidOperationException)
         {
