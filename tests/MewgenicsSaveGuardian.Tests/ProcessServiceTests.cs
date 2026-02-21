@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using MewgenicsSaveGuardian.Services;
 
 namespace MewgenicsSaveGuardian.Tests;
@@ -7,21 +8,41 @@ public class ProcessServiceTests
     private readonly ProcessService _service = new();
 
     [Fact]
-    public void IsGameRunning_should_return_false_when_game_not_running()
+    public void IsGameRunning_should_return_bool()
     {
-        Assert.False(_service.IsGameRunning());
+        // Just verify it returns without throwing; result depends on environment
+        var result = _service.IsGameRunning();
+        Assert.IsType<bool>(result);
     }
 
     [Fact]
-    public void GetGameProcess_should_return_null_when_game_not_running()
+    public void GetGameProcess_should_return_process_or_null()
     {
-        Assert.Null(_service.GetGameProcess());
+        var process = _service.GetGameProcess();
+        if (process is not null)
+        {
+            Assert.Equal("Mewgenics", process.ProcessName);
+        }
+        // null is also valid when game is not running
     }
 
     [Fact]
-    public void LaunchGame_should_not_throw()
+    public void IsGameRunning_and_GetGameProcess_should_be_consistent()
     {
-        // Verify the method exists and accepts the right signature
+        var isRunning = _service.IsGameRunning();
+        var process = _service.GetGameProcess();
+        Assert.Equal(isRunning, process is not null);
+    }
+
+    [Fact]
+    public void LaunchGame_method_should_exist()
+    {
         Assert.NotNull((Action)_service.LaunchGame);
+    }
+
+    [Fact]
+    public void CloseGame_method_should_exist()
+    {
+        Assert.NotNull((Func<bool>)_service.CloseGame);
     }
 }
