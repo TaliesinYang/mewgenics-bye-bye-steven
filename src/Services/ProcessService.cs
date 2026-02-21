@@ -35,17 +35,54 @@ public class ProcessService
         }
         catch (InvalidOperationException)
         {
-            // Process already exited
             return true;
         }
     }
 
-    public void LaunchGame()
+    /// <summary>
+    /// Launch game via exe path if available, otherwise via Steam.
+    /// </summary>
+    public void LaunchGame(string? exePath = null)
     {
-        Process.Start(new ProcessStartInfo
+        if (!string.IsNullOrEmpty(exePath) && System.IO.File.Exists(exePath))
         {
-            FileName = SteamGameUrl,
-            UseShellExecute = true,
-        });
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = exePath,
+                UseShellExecute = true,
+                WorkingDirectory = System.IO.Path.GetDirectoryName(exePath) ?? "",
+            });
+        }
+        else
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = SteamGameUrl,
+                UseShellExecute = true,
+            });
+        }
+    }
+
+    /// <summary>
+    /// Try to detect game exe path from the running process.
+    /// </summary>
+    public string? DetectGamePath()
+    {
+        var process = GetGameProcess();
+        if (process is null)
+            return null;
+
+        try
+        {
+            var path = process.MainModule?.FileName;
+            if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
+                return path;
+        }
+        catch
+        {
+            // Access denied or process exited
+        }
+
+        return null;
     }
 }

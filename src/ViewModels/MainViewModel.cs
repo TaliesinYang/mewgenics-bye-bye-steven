@@ -4,10 +4,13 @@ using System.Windows;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MewgenicsSaveGuardian.Localization;
 using MewgenicsSaveGuardian.Models;
 using MewgenicsSaveGuardian.Services;
 
 namespace MewgenicsSaveGuardian.ViewModels;
+
+public record LanguageOption(string Code, string Name);
 
 public partial class MainViewModel : ObservableObject
 {
@@ -24,14 +27,21 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty] private int _stevenStrikes;
     [ObservableProperty] private int _currentDay;
     [ObservableProperty] private bool _onAdventure;
-    [ObservableProperty] private string _statusMessage = "Ready";
+    [ObservableProperty] private string _statusMessage = string.Empty;
     [ObservableProperty] private bool _isBusy;
-    [ObservableProperty] private bool _clearStevenHistory;
     [ObservableProperty] private bool _autoRelaunchGame;
+    [ObservableProperty] private string _gameExePath = string.Empty;
     [ObservableProperty] private int _maxBackups = 5;
     [ObservableProperty] private BackupEntry? _selectedBackup;
+    [ObservableProperty] private LanguageOption _selectedLanguage;
+    [ObservableProperty] private bool _isPathsExpanded = true;
 
     public ObservableCollection<BackupEntry> Backups { get; } = [];
+
+    public List<LanguageOption> AvailableLanguages { get; } =
+        Loc.SupportedLanguages
+            .Select(c => new LanguageOption(c, Loc.LanguageDisplayNames[c]))
+            .ToList();
 
     public bool IsPenaltyActive => SaveScumLocation == 1;
     public bool HasSaveFile => !string.IsNullOrEmpty(SaveFilePath) && File.Exists(SaveFilePath);
@@ -39,10 +49,20 @@ public partial class MainViewModel : ObservableObject
     public MainViewModel()
     {
         var settings = _settingsService.Load();
+
+        // Initialize language first (before other properties trigger SaveSettings)
+        var langCode = settings.Language;
+        if (!Loc.SupportedLanguages.Contains(langCode))
+            langCode = "en";
+        Loc.Instance.Language = langCode;
+        _selectedLanguage = AvailableLanguages.First(l => l.Code == langCode);
+
         SaveFilePath = settings.SaveFilePath;
         MaxBackups = settings.MaxBackups;
-        ClearStevenHistory = settings.ClearStevenHistory;
         AutoRelaunchGame = settings.AutoRelaunchGame;
+        GameExePath = settings.GameExePath;
+
+        StatusMessage = Loc.Instance["StatusReady"];
 
         _pollTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
         _pollTimer.Tick += (_, _) => PollStatus();
@@ -53,6 +73,15 @@ public partial class MainViewModel : ObservableObject
             RefreshStatus();
             RefreshBackups();
         }
+
+        IsPathsExpanded = !HasSaveFile;
+    }
+
+    partial void OnSelectedLanguageChanged(LanguageOption value)
+    {
+        Loc.Instance.Language = value.Code;
+        StatusMessage = Loc.Instance["StatusReady"];
+        SaveSettings();
     }
 
     partial void OnSaveFilePathChanged(string value)
@@ -69,11 +98,16 @@ public partial class MainViewModel : ObservableObject
     partial void OnSaveScumLocationChanged(int value)
     {
         OnPropertyChanged(nameof(IsPenaltyActive));
+        RemovePenaltyCommand.NotifyCanExecuteChanged();
+        RestartAndClearCommand.NotifyCanExecuteChanged();
     }
 
     partial void OnMaxBackupsChanged(int value) => SaveSettings();
-    partial void OnClearStevenHistoryChanged(bool value) => SaveSettings();
     partial void OnAutoRelaunchGameChanged(bool value) => SaveSettings();
+    partial void OnGameExePathChanged(string value) => SaveSettings();
+
+    [RelayCommand]
+    private void TogglePathsExpanded() => IsPathsExpanded = !IsPathsExpanded;
 
     [RelayCommand]
     private void AutoFindPath()
@@ -82,38 +116,53 @@ public partial class MainViewModel : ObservableObject
         if (paths.Count == 1)
         {
             SaveFilePath = paths[0];
-            StatusMessage = "Save file found automatically.";
+            StatusMessage = Loc.Instance["StatusFoundAuto"];
         }
         else if (paths.Count > 1)
         {
             SaveFilePath = paths[0];
-            StatusMessage = $"Found {paths.Count} save files. Using first one.";
+            StatusMessage = Loc.Instance["StatusFoundMultiple"];
         }
         else
         {
-            StatusMessage = "No save files found. Please browse manually.";
+            StatusMessage = Loc.Instance["StatusNotFound"];
         }
     }
 
-    [RelayCommand(CanExecute = nameof(CanModifySave))]
+    [RelayCommand]
+    private void AutoDetectGameExe()
+    {
+        var path = _processService.DetectGamePath();
+        if (path != null)
+        {
+            GameExePath = path;
+            StatusMessage = Loc.Instance["StatusExeDetected"];
+        }
+        else
+        {
+            StatusMessage = Loc.Instance["StatusExeNotDetected"];
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanRemovePenalty))]
     private async Task RemovePenaltyAsync()
     {
         if (IsGameRunning)
         {
             var result = MessageBox.Show(
-                "Mewgenics is running. Close it first?",
-                "Game Running",
+                Loc.Instance["MsgGameRunningClose"],
+                Loc.Instance["MsgGameRunningTitle"],
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
 
             if (result == MessageBoxResult.Yes)
             {
                 IsBusy = true;
-                StatusMessage = "Closing game...";
+                StatusMessage = Loc.Instance["StatusClosingGame"];
                 var closed = await Task.Run(() => _processService.CloseGame());
                 if (!closed)
                 {
-                    StatusMessage = "Failed to close game. Please close it manually.";
+                    StatusMessage = Loc.Instance["StatusCloseGameFailed"];
                     IsBusy = false;
                     return;
                 }
@@ -126,7 +175,7 @@ public partial class MainViewModel : ObservableObject
         }
 
         IsBusy = true;
-        StatusMessage = "Creating backup...";
+        StatusMessage = Loc.Instance["StatusCreatingBackup"];
 
         try
         {
@@ -136,10 +185,10 @@ public partial class MainViewModel : ObservableObject
                 _backupService.RotateBackups(SaveFilePath, MaxBackups);
             });
 
-            StatusMessage = "Removing penalty...";
+            StatusMessage = Loc.Instance["StatusRemovingPenalty"];
             await Task.Run(() =>
             {
-                _saveFileService.ResetPenalty(SaveFilePath, ClearStevenHistory);
+                _saveFileService.ResetPenalty(SaveFilePath, false);
 
                 if (!_saveFileService.VerifyIntegrity(SaveFilePath))
                     throw new InvalidOperationException("Database integrity check failed after modification.");
@@ -147,13 +196,64 @@ public partial class MainViewModel : ObservableObject
 
             RefreshStatus();
             RefreshBackups();
-            StatusMessage = "Penalty removed successfully!";
+            StatusMessage = Loc.Instance["StatusPenaltyRemoved"];
 
             if (AutoRelaunchGame)
             {
-                _processService.LaunchGame();
-                StatusMessage = "Penalty removed. Game relaunching...";
+                _processService.LaunchGame(GameExePath);
+                StatusMessage = Loc.Instance["StatusPenaltyRemovedRelaunch"];
             }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanModifySave))]
+    private async Task RestartAndClearAsync()
+    {
+        IsBusy = true;
+
+        try
+        {
+            if (IsGameRunning)
+            {
+                StatusMessage = Loc.Instance["StatusClosingGame"];
+                var closed = await Task.Run(() => _processService.CloseGame());
+                if (!closed)
+                {
+                    StatusMessage = Loc.Instance["StatusCloseGameFailed"];
+                    return;
+                }
+                await Task.Delay(1000);
+            }
+
+            StatusMessage = Loc.Instance["StatusCreatingBackup"];
+            await Task.Run(() =>
+            {
+                _backupService.CreateBackup(SaveFilePath);
+                _backupService.RotateBackups(SaveFilePath, MaxBackups);
+            });
+
+            StatusMessage = Loc.Instance["StatusRemovingPenalty"];
+            await Task.Run(() =>
+            {
+                _saveFileService.ResetPenalty(SaveFilePath, false);
+
+                if (!_saveFileService.VerifyIntegrity(SaveFilePath))
+                    throw new InvalidOperationException("Database integrity check failed after modification.");
+            });
+
+            RefreshStatus();
+            RefreshBackups();
+
+            _processService.LaunchGame();
+            StatusMessage = Loc.Instance["StatusPenaltyRemovedRelaunch"];
         }
         catch (Exception ex)
         {
@@ -168,8 +268,10 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void LaunchGame()
     {
-        _processService.LaunchGame();
-        StatusMessage = "Launching game via Steam...";
+        _processService.LaunchGame(GameExePath);
+        StatusMessage = string.IsNullOrEmpty(GameExePath)
+            ? Loc.Instance["StatusLaunchingGame"]
+            : Loc.Instance["StatusLaunchingDirect"];
     }
 
     [RelayCommand]
@@ -178,7 +280,7 @@ public partial class MainViewModel : ObservableObject
         if (!HasSaveFile) return;
 
         IsBusy = true;
-        StatusMessage = "Creating backup...";
+        StatusMessage = Loc.Instance["StatusCreatingBackup"];
         try
         {
             await Task.Run(() =>
@@ -187,11 +289,11 @@ public partial class MainViewModel : ObservableObject
                 _backupService.RotateBackups(SaveFilePath, MaxBackups);
             });
             RefreshBackups();
-            StatusMessage = "Backup created.";
+            StatusMessage = Loc.Instance["StatusBackupCreated"];
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Backup error: {ex.Message}";
+            StatusMessage = $"Error: {ex.Message}";
         }
         finally
         {
@@ -206,31 +308,34 @@ public partial class MainViewModel : ObservableObject
 
         if (IsGameRunning)
         {
-            MessageBox.Show("Please close Mewgenics before restoring.", "Game Running",
+            MessageBox.Show(
+                Loc.Instance["MsgCloseBeforeRestore"],
+                Loc.Instance["MsgGameRunningTitle"],
                 MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
         var confirm = MessageBox.Show(
-            $"Restore backup from {SelectedBackup.Timestamp:yyyy-MM-dd HH:mm:ss}?\nA safety backup will be created first.",
-            "Confirm Restore",
+            string.Format(Loc.Instance["MsgConfirmRestore"],
+                SelectedBackup.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")),
+            Loc.Instance["MsgConfirmRestoreTitle"],
             MessageBoxButton.YesNo,
             MessageBoxImage.Question);
 
         if (confirm != MessageBoxResult.Yes) return;
 
         IsBusy = true;
-        StatusMessage = "Restoring backup...";
+        StatusMessage = Loc.Instance["StatusRestoringBackup"];
         try
         {
             await Task.Run(() => _backupService.RestoreBackup(SaveFilePath, SelectedBackup));
             RefreshStatus();
             RefreshBackups();
-            StatusMessage = "Backup restored successfully.";
+            StatusMessage = Loc.Instance["StatusBackupRestored"];
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Restore error: {ex.Message}";
+            StatusMessage = $"Error: {ex.Message}";
         }
         finally
         {
@@ -238,6 +343,7 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
+    private bool CanRemovePenalty() => HasSaveFile && !IsBusy && IsPenaltyActive;
     private bool CanModifySave() => HasSaveFile && !IsBusy;
 
     private void PollStatus()
@@ -251,6 +357,7 @@ public partial class MainViewModel : ObservableObject
         }
 
         RemovePenaltyCommand.NotifyCanExecuteChanged();
+        RestartAndClearCommand.NotifyCanExecuteChanged();
     }
 
     private void RefreshStatus()
@@ -268,7 +375,7 @@ public partial class MainViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Read error: {ex.Message}";
+            StatusMessage = $"Error: {ex.Message}";
         }
     }
 
@@ -287,8 +394,9 @@ public partial class MainViewModel : ObservableObject
         {
             SaveFilePath = SaveFilePath,
             MaxBackups = MaxBackups,
-            ClearStevenHistory = ClearStevenHistory,
             AutoRelaunchGame = AutoRelaunchGame,
+            GameExePath = GameExePath,
+            Language = SelectedLanguage.Code,
         });
     }
 }

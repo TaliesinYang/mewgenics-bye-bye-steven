@@ -37,7 +37,8 @@ public class ProcessServiceTests
     [Fact]
     public void LaunchGame_method_should_exist()
     {
-        Assert.NotNull((Action)_service.LaunchGame);
+        var method = typeof(ProcessService).GetMethod("LaunchGame");
+        Assert.NotNull(method);
     }
 
     [Fact]
